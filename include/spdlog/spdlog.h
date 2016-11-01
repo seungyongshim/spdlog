@@ -16,6 +16,7 @@
 #include <functional>
 #include <chrono>
 #include <string>
+#include <regex>
 
 namespace spdlog
 {
@@ -142,7 +143,6 @@ void drop(const std::string &name);
 // Drop all references from the registry
 void drop_all();
 
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Trace & Debug can be switched on/off at compile time for zero cost debug statements.
@@ -159,13 +159,25 @@ void drop_all();
 #ifdef SPDLOG_TRACE_ON
 #define SPDLOG_STR_H(x) #x
 #define SPDLOG_STR_HELPER(x) SPDLOG_STR_H(x)
-#define SPDLOG_TRACE(logger, ...) logger->trace("[" __FILE__ " line #" SPDLOG_STR_HELPER(__LINE__) "] " __VA_ARGS__)
+#define SPDLOG_TRACE(logger, ...) logger->trace("["__FILE__"::" SPDLOG_STR_HELPER(__LINE__)"] "  __VA_ARGS__)
 #else
 #define SPDLOG_TRACE(logger, ...)
 #endif
 
 #ifdef SPDLOG_DEBUG_ON
-#define SPDLOG_DEBUG(logger, ...) logger->debug(__VA_ARGS__)
+#define SPDLOG_DEBUG(logger, ...) logger->debug("["__FILE__"::" SPDLOG_STR_HELPER(__LINE__)"] "  __VA_ARGS__)
+#else
+#define SPDLOG_DEBUG(logger, ...)
+#endif
+
+#ifdef SPDLOG_DEBUG_ON
+#define SPDLOG_INFO(logger, ...) logger->info("["__FILE__"::" SPDLOG_STR_HELPER(__LINE__)"] "  __VA_ARGS__)
+#else
+#define SPDLOG_DEBUG(logger, ...)
+#endif
+
+#ifdef SPDLOG_DEBUG_ON
+#define SPDLOG_WARN(logger, ...) logger->warn("["__FILE__"::" SPDLOG_STR_HELPER(__LINE__)"] "  __VA_ARGS__)
 #else
 #define SPDLOG_DEBUG(logger, ...)
 #endif

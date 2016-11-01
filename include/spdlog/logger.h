@@ -34,6 +34,9 @@ public:
     logger(const logger&) = delete;
     logger& operator=(const logger&) = delete;
 
+	//support unicode
+	template <typename... Args> void log(level::level_enum lvl, const wchar_t* fmt, const Args&... args);
+	template <typename... Args> void warn(const wchar_t* fmt, const Args&... args);
 
     template <typename... Args> void log(level::level_enum lvl, const char* fmt, const Args&... args);
     template <typename... Args> void log(level::level_enum lvl, const char* msg);
@@ -42,7 +45,7 @@ public:
     template <typename... Args> void info(const char* fmt, const Args&... args);
     template <typename... Args> void warn(const char* fmt, const Args&... args);
     template <typename... Args> void error(const char* fmt, const Args&... args);
-    template <typename... Args> void critical(const char* fmt, const Args&... args);
+    template <typename... Args> void fatal(const char* fmt, const Args&... args);
 
     template <typename T> void log(level::level_enum lvl, const T&);
     template <typename T> void trace(const T&);
@@ -50,7 +53,7 @@ public:
     template <typename T> void info(const T&);
     template <typename T> void warn(const T&);
     template <typename T> void error(const T&);
-    template <typename T> void critical(const T&);
+    template <typename T> void fatal(const T&);
 
     bool should_log(level::level_enum) const;
     void set_level(level::level_enum);

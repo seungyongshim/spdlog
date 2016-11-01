@@ -10,6 +10,8 @@
 
 #include <iostream>
 #include <memory>
+#include <sstream>
+
 
 void async_example();
 void syslog_example();
@@ -18,6 +20,7 @@ void user_defined_example();
 void err_handler_example();
 
 namespace spd = spdlog;
+
 int main(int, char*[])
 {
     try
@@ -28,33 +31,34 @@ int main(int, char*[])
         console->error("Some error message with arg{}..", 1);
 
         // Formatting examples
-        console->warn("Easy padding in numbers like {:08d}", 12);
-        console->critical("Support for int: {0:d};  hex: {0:x};  oct: {0:o}; bin: {0:b}", 42);
+        console->warn(L"Easy padding in numbers like {:08d}", 12);
+        console->fatal("Support for int: {0:d};  hex: {0:x};  oct: {0:o}; bin: {0:b}", 42);
         console->info("Support for floats {:03.2f}", 1.23456);
         console->info("Positional args are {1} {0}..", "too", "supported");
         console->info("{:<30}", "left aligned");
-
-
+		
+		
+		
         spd::get("console")->info("loggers can be retrieved from a global registry using the spdlog::get(logger_name) function");
 
 
         // Create basic file logger (not rotated)
-        auto my_logger = spd::basic_logger_mt("basic_logger", "logs/basic.txt");
+        auto my_logger = spd::basic_logger_mt("basic_logger", L"logs/basic.txt");
         my_logger->info("Some log message");
 
         // Create a file rotating logger with 5mb size max and 3 rotated files
-        auto rotating_logger = spd::rotating_logger_mt("some_logger_name", "logs/mylogfile", 1048576 * 5, 3);
+        auto rotating_logger = spd::rotating_logger_mt("some_logger_name", L"logs/mylogfile", 1048576 * 5, 3);
         for (int i = 0; i < 10; ++i)
             rotating_logger->info("{} * {} equals {:>10}", i, i, i*i);
 
         // Create a daily logger - a new file is created every day on 2:30am
-        auto daily_logger = spd::daily_logger_mt("daily_logger", "logs/daily", 2, 30);
+        auto daily_logger = spd::daily_logger_mt("daily_logger", L"logs/daily", 2, 30);
         // trigger flush if the log severity is error or higher
         daily_logger->flush_on(spd::level::err);
         daily_logger->info(123.44);
 
         // Customize msg format for all messages
-        spd::set_pattern("*** [%H:%M:%S %z] [thread %t] %v ***");
+        spd::set_pattern("[%Y-%m-%d %H:%M:%S.%e][%l][%t] %v");
         rotating_logger->info("This is another message with custom format");
 
 
@@ -66,6 +70,7 @@ int main(int, char*[])
 
         // Compile time log levels
         // define SPDLOG_DEBUG_ON or SPDLOG_TRACE_ON
+		console->set_level(spd::level::trace);
         SPDLOG_TRACE(console, "Enabled only #ifdef SPDLOG_TRACE_ON..{} ,{}", 1, 3.23);
         SPDLOG_DEBUG(console, "Enabled only #ifdef SPDLOG_DEBUG_ON.. {} ,{}", 1, 3.23);
 
@@ -106,7 +111,7 @@ void async_example()
 {
     size_t q_size = 4096; //queue size must be power of 2
     spdlog::set_async_mode(q_size);
-    auto async_file = spd::daily_logger_st("async_file_logger", "logs/async_log.txt");
+    auto async_file = spd::daily_logger_st("async_file_logger", L"logs/async_log.txt");
 
     for (int i = 0; i < 100; ++i)
         async_file->info("Async message #{}", i);
@@ -128,7 +133,7 @@ void android_example()
 #if defined(__ANDROID__)
     std::string tag = "spdlog-android";
     auto android_logger = spd::android_logger("android", tag);
-    android_logger->critical("Use \"adb shell logcat\" to view this message.");
+    android_logger->fatal("Use \"adb shell logcat\" to view this message.");
 #endif
 }
 

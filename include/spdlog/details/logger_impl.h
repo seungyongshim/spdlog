@@ -59,14 +59,37 @@ inline void spdlog::logger::set_pattern(const std::string& pattern)
 
 
 template <typename... Args>
+inline void spdlog::logger::log(level::level_enum lvl, const wchar_t* fmt, const Args&... args)
+{
+	if (!should_log(lvl)) return;
+
+	try
+	{
+		details::log_msg log_msg(&_name, lvl);
+		log_msg.raw.write(fmt, args...);
+		_sink_it(log_msg);
+	}
+	catch (const std::exception &ex)
+	{
+		_err_handler(ex.what());
+	}
+	catch (...)
+	{
+		_err_handler("Unknown exception");
+	}
+}
+
+template <typename... Args>
 inline void spdlog::logger::log(level::level_enum lvl, const char* fmt, const Args&... args)
 {
     if (!should_log(lvl)) return;
 
     try
     {
+		fmt::WMemoryWriter wmw;
+		wmw << fmt;
         details::log_msg log_msg(&_name, lvl);
-        log_msg.raw.write(fmt, args...);
+		log_msg.raw.write(wmw.c_str(), args...);
         _sink_it(log_msg);
     }
     catch (const std::exception &ex)
@@ -86,7 +109,9 @@ inline void spdlog::logger::log(level::level_enum lvl, const char* msg)
     try
     {
         details::log_msg log_msg(&_name, lvl);
-        log_msg.raw << msg;
+		fmt::WMemoryWriter wmw;
+		wmw << msg;
+		log_msg.raw << wmw.c_str();
         _sink_it(log_msg);
     }
     catch (const std::exception &ex)
@@ -147,15 +172,21 @@ inline void spdlog::logger::warn(const char* fmt, const Args&... args)
 }
 
 template <typename... Args>
+inline void spdlog::logger::warn(const wchar_t* fmt, const Args&... args)
+{
+	log(level::warn, fmt, args...);
+}
+
+template <typename... Args>
 inline void spdlog::logger::error(const char* fmt, const Args&... args)
 {
     log(level::err, fmt, args...);
 }
 
 template <typename... Args>
-inline void spdlog::logger::critical(const char* fmt, const Args&... args)
+inline void spdlog::logger::fatal(const char* fmt, const Args&... args)
 {
-    log(level::critical, fmt, args...);
+    log(level::fatal, fmt, args...);
 }
 
 
@@ -192,7 +223,7 @@ inline void spdlog::logger::error(const T& msg)
 }
 
 template<typename T>
-inline void spdlog::logger::critical(const T& msg)
+inline void spdlog::logger::fatal(const T& msg)
 {
     log(level::critical, msg);
 }
@@ -281,7 +312,7 @@ inline void spdlog::logger::_default_err_handler(const std::string &msg)
     char date_buf[100];
     std::strftime(date_buf, sizeof(date_buf), "%Y-%m-%d %H:%M:%S", &tm_time);
     details::log_msg  err_msg;
-    err_msg.formatted.write("[*** LOG ERROR ***] [{}] [{}] [{}]{}", name(), msg, date_buf, details::os::eol);
+    err_msg.formatted.write(L"[*** LOG ERROR ***] [{}] [{}] [{}]{}", name(), msg, date_buf, details::os::eol);
     sinks::stderr_sink_mt::instance()->log(err_msg);
     _last_err_time = now;
 }

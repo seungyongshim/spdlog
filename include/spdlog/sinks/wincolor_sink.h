@@ -38,7 +38,7 @@ public:
         colors_[level::info] = WHITE | BOLD;
         colors_[level::warn] = YELLOW | BOLD;
         colors_[level::err] = RED | BOLD; // red bold
-        colors_[level::critical] = BACKGROUND_RED | WHITE | BOLD; // white bold on red background
+        colors_[level::fatal] = BACKGROUND_RED | WHITE | BOLD; // white bold on red background
         colors_[level::off] = 0;
     }
 
@@ -54,7 +54,7 @@ public:
     {
         auto color = colors_[msg.level];
         auto orig_attribs = set_console_attribs(color);
-        WriteConsoleA(out_handle_, msg.formatted.data(), static_cast<DWORD>(msg.formatted.size()), nullptr, nullptr);
+        WriteConsoleW(out_handle_, msg.formatted.data(), static_cast<DWORD>(msg.formatted.size()), nullptr, nullptr);
         SetConsoleTextAttribute(out_handle_, orig_attribs); //reset to orig colors
     }
 
