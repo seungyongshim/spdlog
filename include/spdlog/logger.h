@@ -65,7 +65,10 @@ public:
 
     // automatically call flush() if message level >= log_level
     void flush_on(level::level_enum log_level);
+
     virtual void flush();
+
+    const std::vector<sink_ptr>& sinks() const;
 
 protected:
     virtual void _sink_it(details::log_msg&);
@@ -74,6 +77,9 @@ protected:
 
     // default error handler: print the error to stderr with the max rate of 1 message/minute
     virtual void _default_err_handler(const std::string &msg);
+
+    // return true if the given message level should trigger a flush
+    bool _should_flush_on(const details::log_msg&);
 
     const std::string _name;
     std::vector<sink_ptr> _sinks;
@@ -86,5 +92,3 @@ protected:
 }
 
 #include <spdlog/details/logger_impl.h>
-
-

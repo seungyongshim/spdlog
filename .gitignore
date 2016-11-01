@@ -1,4 +1,4 @@
-# Auto generated files 
+# Auto generated files
 *.slo
 *.lo
 *.o
@@ -45,6 +45,8 @@ example/*
 !example/example.sln
 !example/example.vcxproj
 !example/CMakeLists.txt
+!example/multisink.cpp
+!example/jni
 
 # generated files
 generated
